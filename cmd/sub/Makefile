@@ -1,6 +1,6 @@
 include ../../includes.mk
 
-APP := pub
+APP := sub
 
 .PHONY: run
 
