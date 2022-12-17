@@ -1,13 +1,19 @@
 include includes.mk
 
-PHONY: install run run-sub run-pub
+PHONY: install run run-sub run-pub set-env unset-env
 
 APPS ?= pub sub
 
 .DEFAULT_GOAL := help
 
+ifneq (,$(wildcard ./.env))
+    include .env
+    export
+endif
+
 install: ## download dependencies
 	@go mod download > /dev/null >&1
+
 
 env-up:
 	@docker-compose up -d
@@ -20,7 +26,7 @@ run: ## run
 run-sub: ## run subscriber
 	@$(MAKE) -C $(APPS_DIR)/sub run
 
-run-pub: ## run publisher
+run-pub: install ## run publisher
 	@$(MAKE) -C $(APPS_DIR)/pub run
 
 

@@ -6,4 +6,4 @@ APP := sub
 
 run:
 	@echo "=> run $(APP)"
-	@$(GO) run main.go
+	@$(GO) run main.go --version=$(VERSION) --service=$(APP) --id=2
