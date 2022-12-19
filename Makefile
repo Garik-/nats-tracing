@@ -14,6 +14,8 @@ endif
 install: ## download dependencies
 	@go mod download > /dev/null >&1
 
+build:	install ## build binary
+	@$(foreach APP, $(APPS), $(MAKE) -C $(APPS_DIR)/$(APP) build ;)
 
 env-up:
 	@docker-compose up -d

@@ -1,9 +1,14 @@
 include ../../includes.mk
 
 APP := sub
+ID := 2
 
-.PHONY: run
+.PHONY: run build
 
-run:
-	@echo "=> run $(APP)"
-	@$(GO) run main.go --version=$(VERSION) --service=$(APP) --id=2
+build:
+	@echo "=> building $(APP) binary"
+	@$(GO_FLAGS) $(GO_LDFLAGS) $(GO) build -o $(BIN_DIR)/$(APP) .
+
+run: build
+	@echo "=> run $(APP) $(VERSION)"
+	@$(BIN_DIR)/$(APP) --version=$(VERSION) --service=$(APP) --id=$(ID)
