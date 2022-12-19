@@ -2,17 +2,19 @@ package main
 
 import (
 	"context"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
 	"github.com/lucsky/cuid"
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/trace"
 	"golang.org/x/sync/errgroup"
+
 	"nats-tracing/internal/logger"
-	"os"
-	"os/signal"
-	"syscall"
-	"time"
 )
 
 const (
@@ -79,6 +81,7 @@ func (s *service) run(ctx context.Context) error {
 func (s *service) publishEvent(ctx context.Context) error {
 	id := cuid.New()
 	ctx, span := otel.Tracer(name).Start(ctx, id, trace.WithSpanKind(trace.SpanKindProducer))
+
 	defer span.End()
 
 	msg := newMsg(ctx, subject, []byte(id))
@@ -89,6 +92,7 @@ func (s *service) publishEvent(ctx context.Context) error {
 	}
 
 	logger.Get().Debug("publishEvent", logger.String("id", id))
+
 	return nil
 }
 

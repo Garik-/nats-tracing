@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+
 	"github.com/nats-io/nats.go"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/trace"
+
 	"nats-tracing/internal/logger"
 )
 
@@ -19,7 +21,6 @@ func Subscribe(
 	handler SubscribeHandler,
 	opts ...nats.SubOpt,
 ) (err error) {
-
 	sub, err := stream.QueueSubscribeSync(subject, consumerID, opts...)
 	if err != nil {
 		return errors.Wrap(err, "stream.QueueSubscribeSync")
@@ -50,7 +51,7 @@ func handleSubscription(ctx context.Context, sub *nats.Subscription, handler Sub
 	}
 }
 
-// copy from http.Header.Clone()
+// copy from http.Header.Clone().
 func header(h nats.Header) propagation.HeaderCarrier {
 	if h == nil {
 		return nil
@@ -61,8 +62,10 @@ func header(h nats.Header) propagation.HeaderCarrier {
 	for _, vv := range h {
 		nv += len(vv)
 	}
+
 	sv := make([]string, nv) // shared backing array for headers' values
 	h2 := make(propagation.HeaderCarrier, len(h))
+
 	for k, vv := range h {
 		if vv == nil {
 			// Preserve nil values. ReverseProxy distinguishes
@@ -70,15 +73,18 @@ func header(h nats.Header) propagation.HeaderCarrier {
 			h2[k] = nil
 			continue
 		}
+
 		n := copy(sv, vv)
 		h2[k] = sv[:n:n]
 		sv = sv[n:]
 	}
+
 	return h2
 }
 
 func handlerFunc(ctx context.Context, msg *nats.Msg) error {
 	log := logger.Get()
+
 	defer func() {
 		if errAck := msg.Ack(); errAck != nil {
 			log.Error("msg.Ack", logger.Error(errAck))

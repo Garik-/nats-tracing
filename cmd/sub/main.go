@@ -2,16 +2,19 @@ package main
 
 import (
 	"context"
+	"time"
+
 	"github.com/nats-io/nats.go"
+
 	"nats-tracing/internal/config"
 	"nats-tracing/internal/logger"
 	"nats-tracing/internal/trace"
-	"time"
 )
 
 const (
-	shutdownTimeout = time.Second * 5
-	packageName     = "sub"
+	shutdownTimeout   = time.Second * 5
+	packageName       = "sub"
+	natsMaxAckPending = 256
 )
 
 func main() {
@@ -27,6 +30,7 @@ func main() {
 
 	cfg.Print()
 	err = cfg.Validate()
+
 	if err != nil {
 		log.Fatal("config validate", logger.Error(err))
 	}
@@ -48,18 +52,15 @@ func main() {
 
 	defer cancelTrace(ctx, shutdownTimeout)
 
-	//tr := otel.Tracer(packageName)
-	//ctx, mainSpan := tr.Start(ctx, "main")
-	//defer mainSpan.End()
-
 	log.Info("nats connecting", logger.String("server", cfg.NatsServer))
 	nc, err := nats.Connect(cfg.NatsServer)
+
 	if err != nil {
 		log.Fatal("nats.Connect", logger.Error(err))
 	}
 	defer nc.Close()
 
-	js, err := nc.JetStream(nats.PublishAsyncMaxPending(256))
+	js, err := nc.JetStream(nats.PublishAsyncMaxPending(natsMaxAckPending))
 
 	if err != nil {
 		log.Fatal("nc.JetStream", logger.Error(err))
@@ -67,7 +68,7 @@ func main() {
 
 	err = Subscribe(ctx, js, "ORDERS.*", "test-id",
 		handlerFunc,
-		nats.MaxAckPending(256),
+		nats.MaxAckPending(natsMaxAckPending),
 		nats.DeliverLastPerSubject(),
 		nats.AckAll(),
 	)

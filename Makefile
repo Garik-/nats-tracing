@@ -1,6 +1,6 @@
 include includes.mk
 
-PHONY: install run run-sub run-pub set-env unset-env
+PHONY: install run run-sub run-pub set-env unset-env lint
 
 APPS ?= pub sub
 
@@ -16,6 +16,9 @@ install: ## download dependencies
 
 build:	install ## build binary
 	@$(foreach APP, $(APPS), $(MAKE) -C $(APPS_DIR)/$(APP) build ;)
+
+lint: bootstrap ## run golangci-linter
+	@$(foreach APP, $(APPS), $(GOLANGCI_LINT_BIN) run $(APPS_DIR)/$(APP) ;)
 
 env-up:
 	@docker-compose up -d
